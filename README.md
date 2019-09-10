@@ -13,13 +13,12 @@ A small Clojure library for parsing raw osm.pbf (protocolbuffer binary format) f
 ;; Datafy osm pbf
    (datafy-osm-pbf input-stream)
 
-;; Where the `input-stream` is an instance of `java.io.InputStream` representing the osm.pbf file. Note that the evaluation of the datafy-osm-pbf function is lazy.
-
+;; Where `input-stream` is an instance of `java.io.InputStream` representing the osm.pbf file. 
+;; Note that the evaluation of the datafy-osm-pbf function is lazy.
 ```
 ## Osm pbf files
 The raw pbf files this library is intended parse are located at
-`download.geofabrik.de`.
-(https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf)
+`download.geofabrik.de` i.e. https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf
 
 ## License
 Release under the MIT license. See LICENSE for the full license.

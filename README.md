@@ -4,7 +4,21 @@ A small Clojure library for parsing raw osm.pbf (protocolbuffer binary format) f
 
 ## Usage
 
-FIXME
+```clojure
+   [poipoi "0.1.0"]
+
+;; In your require statement:
+   [poipoi.core :refer [datafy-osm-pbf]]
+
+;; Datafy osm pbf
+   (datafy-osm-pbf input-stream)
+
+;; Where the `input-stream` is an instance of `java.io.InputStream` representing the osm.pbf file
+```
+## Osm pbf files
+The raw pbf files this library is intended parse are located at
+`download.geofabrik.de`.
+(https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf)
 
 ## License
 Release under the MIT license. See LICENSE for the full license.

@@ -17,7 +17,8 @@
 
 (defn- datafy-node
   [^Node n]
-  {:geo/lat (.getLatitude n)
+  {:osm/id  (.getId n)
+   :geo/lat (.getLatitude n)
    :geo/lng (.getLongitude n)
    :osm/tags (into {}
                    (map unpack-tag)
@@ -25,20 +26,23 @@
 
 (defn- datafy-relation
   [^Relation r]
-  {:tags (into {}
-               (map unpack-tag)
-               (.getTags r))
-   :members (map (fn [m]
-                   {:role (.getRole m)
+  {:osm/id      (.getId r)
+   :osm/tags    (into {}
+                      (map unpack-tag)
+                      (.getTags r))
+   :osm/members (map (fn [m]
+                   {:id   (.getId m)
+                    :role (.getRole m)
                     :type (entity-type->kwd (.getType m))})
                  (.getMembers r))})
 
 (defn- datafy-way
   [^Way w]
-  {:nodes (.toArray (.getNodes w))
-   :tags (into {}
-               (map unpack-tag)
-               (.getTags w))})
+  {:osm/id    (.getId w)
+   :osm/nodes (.toArray (.getNodes w))
+   :osm/tags  (into {}
+                (map unpack-tag)
+                (.getTags w))})
 
 (defn- datafy-entity-container
   [^EntityContainer this]

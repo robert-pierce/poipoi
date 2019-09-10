@@ -1,4 +1,4 @@
-(defproject poipoi "0.1.0-SNAPSHOT"
+(defproject poipoi "0.1.0"
   :description "A small Clojure library for parsing raw osm.pbf (protocolbuffer binary format) files into Clojure data structures."
   :url "https://github.com/robert-pierce/poipoi"
   :license {:name "Eclipse Public License"

@@ -5,11 +5,11 @@
   (:import [java.io InputStream]
            [de.topobyte.osm4j.pbf.seq PbfIterator]))
 
-(defn pbf-iterator
+(defn- pbf-iterator
   [^InputStream is]
   (PbfIterator. is true))
 
-(defn datafy-osm-iterator
+(defn- datafy-osm-iterator
   [^PbfIterator pbfi]
   (map datafy pbfi))
 

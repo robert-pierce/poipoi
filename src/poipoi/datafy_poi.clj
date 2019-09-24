@@ -39,7 +39,7 @@
 (defn- datafy-way
   [^Way w]
   {:osm/id    (.getId w)
-   :osm/nodes (.toArray (.getNodes w))
+   :osm/nodes (seq (.toArray (.getNodes w)))
    :osm/tags  (into {}
                 (map unpack-tag)
                 (.getTags w))})

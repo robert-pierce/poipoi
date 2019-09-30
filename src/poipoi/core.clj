@@ -23,7 +23,7 @@
   [^PbfIterator pbfi]
   (map datafy pbfi))
 
-(defn osm-iterator->datafied-reducible
+(defn- osm-iterator->datafied-reducible
   [^PbfIterator pbf-iter]
   (reify clojure.lang.IReduceInit
     (reduce [_ rf init]
@@ -37,43 +37,77 @@
               (recur ret)))
           acc)))))
 
-(defn datafy-osm-pbf*
+(defn- datafy-osm-pbf*
   [^InputStream is]
-  (try
-    (-> is
-        pbf-iterator
-        datafy-osm-iterator)
-    (catch Exception e (println "An error occured datafying the osm-pbf stream: " e))))
+  (-> is
+      pbf-iterator
+      datafy-osm-iterator))
 
-(defn datafy-osm-pbf-r*
+(defn- datafy-osm-pbf-r*
   [^InputStream is]
-  (try
-    (-> is
-        pbf-iterator
-        osm-iterator->datafied-reducible)
-    (catch Exception e (println "An error occured datafying the osm-pbf stream: " e))))
+  (-> is
+      pbf-iterator
+      osm-iterator->datafied-reducible))
 
 ;;----------------------------------------
-(defn datafy-osm-pbf
-  ([path] (datafy-osm-pbf path {}))
-  ([path opts]
+(defn datafy-osm-pbf-r
+  "Accepts a path and tries to open an input-stream on that path. The path should point to
+  an osm-pbf resource. The input-stream is consumed and parsed into a reducible collection of
+  osm data structures. The reduicible collecion is then transformed into a final collection using
+  into and applying the xform supplied via the function params. The user can also supply a final
+  collection structure such as a vector, list, or set. A vector is used by default"
+  ([path] (datafy-osm-pbf-r path [] nil))
+  ([path to] (datafy-osm-pbf-r path to nil))
+  ([path to xf]
    (try
-     (with-open [is (input-stream path)]
-       (let [{:keys [reducible]} opts]
-         (if reducible
-           (into [] (datafy-osm-pbf-r* is))
-           (doall (datafy-osm-pbf* is)))))
-     (catch Exception e (println "An error occured datafyin the osm-pbf stream:" e)))))
+    (with-open [is (input-stream path)]
+      (if xf
+        (into to xf (datafy-osm-pbf-r* is))
+        (into to (datafy-osm-pbf-r* is))))
+    (catch Exception e (println "An error occured datafyin the osm-pbf stream:" e)))))
 
+(defn datafy-osm-pbf
+  "Accepts a path and tries to open an input-stream on that path. The path should point to
+  an osm-pbf resource. The input-stream is consumed and parsed into osm data structures."
+  [path]
+  (try
+    (with-open [is (input-stream path)]
+      (doall (datafy-osm-pbf* is)))
+    (catch Exception e (println "An error occured datafyin the osm-pbf stream:" e))))
+
+(defn datafy-osm-pbf-r-stream
+  "Accepts an input-stream opened by the user on an osm.pbf resource. The contained osm data
+  structures are then datafied into a reducible collection. It is up to the user to force the
+  concrete collection (ie via into) and to close the stream."
+  [^InputStream is]
+  (try
+    (datafy-osm-pbf-r* is)
+    (catch Exception e (println "An error occured datafyin the osm-pbf stream:" e))))
+
+(defn datafy-osm-pbf-stream
+  "Accepts an input-stream opened by the user on an osm.pbf resource. The contained osm data
+  structures are then datafied lazily. It is up to the user to force the concrete collection
+  (ie via doall) and to close the stream."
+  [^InputStream is]
+  (try
+    (datafy-osm-pbf* is)
+    (catch Exception e (println "An error occured datafyin the osm-pbf stream:" e))))
 ;;--------------------------------------------
-(comment "sequential usage -- DEPRECATED"
-  (with-open [is
-              (clojure.java.io/input-stream
-               "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf")]
-                (into #{} identity (datafy-osm-pbf is))))
+(comment "usuage - datafy-osm-pbf"
+  (datafy-osm-pbf "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf"))
 
-(comment "reducible usage -- DEPRECATED"
+(comment "usuage - datafy-osm-pbf-stream"
+  (with-open [is (input-stream
+                  "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf")]
+    (datafy-osm-pbf is)))
+
+(comment "usuage - datafy-osm-pbf-r-stream"
   (with-open [is
-              (clojure.java.io/input-stream
+              (input-stream
                "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf")]
-                (into #{} identity (datafy-osm-pbf-reducible is))))
+    (datafy-osm-pbf-r-stream is)))
+
+(comment "usuage - datafy-osm-pbf-r"
+         (datafy-osm-pbf-r "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf"
+                           #{}
+                           (filter (comp (partial = :node) :osm/type))))

@@ -11,8 +11,8 @@ A small Clojure library for parsing raw osm.pbf (protocol buffer binary format) 
    [poipoi.core :as poi]
 
 ;; Datafy osm pbf
-   (datafy-osm-pbf-r "path-to-osm-pbf-data" [] xform))
-   (datafy-osm-pbf  "path-to-osm-pbf-data")
+   (datafy-osm-pbf-r <path-to-osm-pbf-data> [] xform))
+   (datafy-osm-pbf   <path-to-osm-pbf-data>)
 
   ;; if you would like to manage your own input-stream
    (datafy-osm-pbf-stream input-stream)

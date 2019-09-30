@@ -1,6 +1,6 @@
 (ns resources.mock-osm-data
   (:require [clojure.java.io :refer [input-stream output-stream]])
-  (:import [de.topobyte.osm4j.core.model.iface #_EntityContainer #_EntityType OsmEntity]
+  (:import [de.topobyte.osm4j.core.model.iface EntityType OsmEntity]
            [de.topobyte.osm4j.core.model.impl Node Relation RelationMember Way Tag]
            [de.topobyte.osm4j.pbf.seq PbfWriter]
            [com.slimjars.dist.gnu.trove.list.array TLongArrayList]))

@@ -8,10 +8,15 @@ A small Clojure library for parsing raw osm.pbf (protocolbuffer binary format) f
    [poipoi "0.1.0"]
 
 ;; In your require statement:
-   [poipoi.core :refer [datafy-osm-pbf]]
+   [poipoi.core :as poi]
 
 ;; Datafy osm pbf
-   (datafy-osm-pbf input-stream)
+   (datafy-osm-pbf-r "path-to-osm-pbf-data" [] xform))
+   (datafy-osm-pbf  "path-to-osm-pbf-data")
+
+  ;; if you would like to manage your own input-stream
+   (datafy-osm-pbf-stream input-stream)
+   (datafy-osm-pbf-r-stream input-stream) ;; returns a reducible collection
 
 ;; Where `input-stream` is an instance of `java.io.InputStream` representing the osm.pbf file. 
 ;; Note that the evaluation of the datafy-osm-pbf function is lazy.

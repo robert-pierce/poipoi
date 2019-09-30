@@ -7,15 +7,11 @@
            [de.topobyte.osm4j.core.model.iface EntityContainer]
            [de.topobyte.osm4j.pbf.seq PbfIterator]))
 
-;; todo
-;; - fix exception handling
-;; - is this idiomatic/cannonical
-;; - better handle options???
-;; - make into  collection a param
-;; - create an api that accepts a stream and returns a reducible collection
-;;      let the user manage the stream
+(defn print-error
+  [e]
+  (println (str "An error occured while processing the osm data: ") e))
 
-(defn pbf-iterator
+(defn- pbf-iterator
   [^InputStream is]
   (PbfIterator. is true))
 
@@ -52,8 +48,8 @@
 ;;----------------------------------------
 (defn datafy-osm-pbf-r
   "Accepts a path and tries to open an input-stream on that path. The path should point to
-  an osm-pbf resource. The input-stream is consumed and parsed into a reducible collection of
-  osm data structures. The reduicible collecion is then transformed into a final collection using
+  an osm.pbf resource. The input-stream is consumed and parsed into a reducible collection of
+  osm data structures. The reducible collecion is then transformed into a final collection using
   into and applying the xform supplied via the function params. The user can also supply a final
   collection structure such as a vector, list, or set. A vector is used by default"
   ([path] (datafy-osm-pbf-r path [] nil))
@@ -64,16 +60,16 @@
       (if xf
         (into to xf (datafy-osm-pbf-r* is))
         (into to (datafy-osm-pbf-r* is))))
-    (catch Exception e (println "An error occured datafyin the osm-pbf stream:" e)))))
+    (catch Exception e (print-error e)))))
 
 (defn datafy-osm-pbf
   "Accepts a path and tries to open an input-stream on that path. The path should point to
-  an osm-pbf resource. The input-stream is consumed and parsed into osm data structures."
+  an osm.pbf resource. The input-stream is consumed and parsed into osm data structures."
   [path]
   (try
     (with-open [is (input-stream path)]
       (doall (datafy-osm-pbf* is)))
-    (catch Exception e (println "An error occured datafyin the osm-pbf stream:" e))))
+    (catch Exception e (print-error e))))
 
 (defn datafy-osm-pbf-r-stream
   "Accepts an input-stream opened by the user on an osm.pbf resource. The contained osm data
@@ -82,7 +78,7 @@
   [^InputStream is]
   (try
     (datafy-osm-pbf-r* is)
-    (catch Exception e (println "An error occured datafyin the osm-pbf stream:" e))))
+    (catch Exception e (print-error e))))
 
 (defn datafy-osm-pbf-stream
   "Accepts an input-stream opened by the user on an osm.pbf resource. The contained osm data
@@ -91,23 +87,24 @@
   [^InputStream is]
   (try
     (datafy-osm-pbf* is)
-    (catch Exception e (println "An error occured datafyin the osm-pbf stream:" e))))
+    (catch Exception e (print-error e))))
+
 ;;--------------------------------------------
-(comment "usuage - datafy-osm-pbf"
+(comment "usuage: datafy-osm-pbf"
   (datafy-osm-pbf "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf"))
 
-(comment "usuage - datafy-osm-pbf-stream"
+(comment "usuage: datafy-osm-pbf-stream"
   (with-open [is (input-stream
                   "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf")]
-    (datafy-osm-pbf is)))
+    (datafy-osm-pbf-stream is)))
 
-(comment "usuage - datafy-osm-pbf-r-stream"
+(comment "usuage: datafy-osm-pbf-r-stream"
   (with-open [is
               (input-stream
                "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf")]
     (datafy-osm-pbf-r-stream is)))
 
-(comment "usuage - datafy-osm-pbf-r"
+(comment "usuage: datafy-osm-pbf-r"
          (datafy-osm-pbf-r "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf"
                            #{}
                            (filter (comp (partial = :node) :osm/type))))

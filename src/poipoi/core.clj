@@ -7,7 +7,7 @@
            [de.topobyte.osm4j.core.model.iface EntityContainer]
            [de.topobyte.osm4j.pbf.seq PbfIterator]))
 
-(defn print-error
+(defn- print-error
   [e]
   (println (str "An error occured while processing the osm data: ") e))
 
@@ -20,18 +20,20 @@
   (map datafy pbfi))
 
 (defn- osm-iterator->datafied-reducible
-  [^PbfIterator pbf-iter]
+  [path]
   (reify clojure.lang.IReduceInit
     (reduce [_ rf init]
-      (loop [acc init]
-        (if (.hasNext pbf-iter)
-          (let [^EntityContainer entity (.next pbf-iter)
-                datafied-entity         (datafy entity)
-                ret                     (rf acc datafied-entity)]
-            (if (reduced? ret)
-              @ret
-              (recur ret)))
-          acc)))))
+      (with-open [is (input-stream path)]
+        (let [pbf-iter (pbf-iterator is)]
+            (loop [acc init]
+              (if (.hasNext pbf-iter)
+                (let [^EntityContainer entity (.next pbf-iter)
+                      datafied-entity         (datafy entity)
+                      ret                     (rf acc datafied-entity)]
+                  (if (reduced? ret)
+                    @ret
+                    (recur ret)))
+                acc)))))))
 
 (defn- datafy-osm-pbf*
   [^InputStream is]
@@ -40,26 +42,23 @@
       datafy-osm-iterator))
 
 (defn- datafy-osm-pbf-r*
-  [^InputStream is]
-  (-> is
-      pbf-iterator
-      osm-iterator->datafied-reducible))
+  [path]
+  (osm-iterator->datafied-reducible path))
 
 ;;----------------------------------------
 (defn datafy-osm-pbf-r
   "Accepts a path and tries to open an input-stream on that path. The path should point to
   an osm.pbf resource. The input-stream is consumed and parsed into a reducible collection of
   osm data structures. The reducible collecion is then transformed into a final collection using
-  into and applying the xform supplied via the function params. The user can also supply a final
+  `into` and applying the xform supplied via the function params. The user can also supply a final
   collection structure such as a vector, list, or set. A vector is used by default"
   ([path] (datafy-osm-pbf-r path [] nil))
   ([path to] (datafy-osm-pbf-r path to nil))
   ([path to xf]
    (try
-    (with-open [is (input-stream path)]
-      (if xf
-        (into to xf (datafy-osm-pbf-r* is))
-        (into to (datafy-osm-pbf-r* is))))
+    (if xf
+      (into to xf (datafy-osm-pbf-r* path))
+      (into to (datafy-osm-pbf-r* path)))
     (catch Exception e (print-error e)))))
 
 (defn datafy-osm-pbf
@@ -93,6 +92,11 @@
 (comment "usuage: datafy-osm-pbf"
   (datafy-osm-pbf "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf"))
 
+(comment "usuage: datafy-osm-pbf-r"
+         (datafy-osm-pbf-r "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf"
+                           #{}
+                           (filter (comp (partial = :node) :osm/type))))
+
 (comment "usuage: datafy-osm-pbf-stream"
   (with-open [is (input-stream
                   "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf")]
@@ -103,8 +107,3 @@
               (input-stream
                "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf")]
     (datafy-osm-pbf-r-stream is)))
-
-(comment "usuage: datafy-osm-pbf-r"
-         (datafy-osm-pbf-r "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf"
-                           #{}
-                           (filter (comp (partial = :node) :osm/type))))

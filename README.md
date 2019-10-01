@@ -19,7 +19,7 @@ A small Clojure library for parsing raw osm.pbf (protocol buffer binary format) 
    (datafy-osm-pbf-r-stream input-stream) ;; returns a reducible collection
 
 ;; Where `input-stream` is an instance of `java.io.InputStream` representing the osm.pbf file. 
-;; Note that the evaluation of the datafy-osm-pbf function is lazy.
+;; Note that the evaluation of the datafy-osm-pbf-stream function is lazy.
 ```
 ## Osm pbf files
 The raw pbf files this library is intended parse are located at

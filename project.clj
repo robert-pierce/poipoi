@@ -6,5 +6,5 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [de.topobyte/osm4j-pbf "0.1.0"]
                  [com.slimjars.trove4j/trove4j-long-array-list "1.0.1"]]
-  :repositories [["slimjars" "http://mvn.slimjars.com"]
-                 ["topobyte" "http://mvn.topobyte.de"]])
+  :repositories [["slimjars" "https://mvn.slimjars.com"]
+                 ["topobyte" "https://mvn.topobyte.de"]])
